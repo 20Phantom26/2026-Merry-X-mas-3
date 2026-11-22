@@ -4,1066 +4,1363 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Merry Christmas ✨</title>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#03132e}
-canvas{display:block}
+html,body{width:100%;height:100%;overflow:hidden;background:#03142e}
+canvas{display:block;touch-action:manipulation}
+
 #intro{
- position:fixed;inset:0;z-index:5;display:flex;
- flex-direction:column;justify-content:center;align-items:center;
- color:#f8e8bd;pointer-events:none;
- background:radial-gradient(ellipse at center,#102b52 0%,#06152f 55%,#010817 100%);
- transition:opacity 2.5s ease
+  position:fixed;inset:0;z-index:10;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  color:#f8e8c5;text-align:center;
+  background:
+    radial-gradient(ellipse at 50% 48%,#17375e 0%,#0a2040 42%,#020b1d 100%);
+  cursor:pointer;
+  transition:opacity 2s ease;
 }
 #intro h1{
- font-family:Georgia,serif;font-weight:400;
- font-size:clamp(24px,5vw,48px);letter-spacing:8px;
- text-shadow:0 0 25px #e9c875;
- animation:fade 3s ease both
+  font-family:Georgia,serif;font-weight:400;
+  font-size:clamp(27px,6vw,55px);
+  letter-spacing:7px;
+  text-shadow:0 0 18px #e8c77d,0 0 45px #dba94c;
 }
 #intro p{
- margin-top:18px;font-size:11px;letter-spacing:5px;
- color:#c5d9ef;animation:fade 3s 1s both
+  margin-top:17px;
+  font-family:Georgia,serif;
+  font-size:clamp(10px,2vw,13px);
+  letter-spacing:3px;color:#d4dfef;
 }
-@keyframes fade{from{opacity:0}to{opacity:1}}
+#intro .touch{
+  margin-top:55px;font-size:11px;
+  letter-spacing:4px;color:#e9d5a7;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:.4}
+  50%{opacity:1}
+}
+
 #hint{
- position:fixed;z-index:3;bottom:22px;width:100%;
- text-align:center;color:rgba(238,224,194,.8);
- font-size:12px;letter-spacing:2px;pointer-events:none;
- text-shadow:0 0 12px #d6b66f
+  position:fixed;z-index:4;bottom:20px;left:0;width:100%;
+  text-align:center;color:rgba(247,229,195,.8);
+  font-size:12px;letter-spacing:2px;
+  text-shadow:0 0 12px #d7ad61;
+  pointer-events:none;padding:0 12px;
 }
 #blessing{
- position:fixed;inset:0;z-index:10;display:none;
- justify-content:center;align-items:center;
- background:rgba(1,8,24,.68);backdrop-filter:blur(9px)
+  position:fixed;inset:0;z-index:20;
+  display:none;justify-content:center;align-items:center;
+  padding:20px;
+  background:rgba(1,8,23,.72);
+  backdrop-filter:blur(9px);
 }
 .message{
- width:min(88%,440px);padding:42px 30px;text-align:center;
- color:#f8e9c7;border:1px solid rgba(232,195,119,.65);
- background:linear-gradient(145deg,#10284b,#06152d);
- box-shadow:0 0 60px #d2a64a26
+  width:min(440px,90vw);padding:40px 27px;
+  text-align:center;color:#f7e9ca;
+  border:1px solid rgba(229,195,125,.65);
+  background:linear-gradient(145deg,#142d50,#07162d);
+  box-shadow:0 0 55px rgba(215,174,93,.18);
 }
-.message h2{font-weight:400;letter-spacing:5px;margin-bottom:24px}
-.message p{font-size:16px;line-height:2.1;white-space:pre-line}
+.message h2{
+  font:normal 17px Georgia,serif;
+  letter-spacing:4px;margin-bottom:22px;
+}
+.message p{font-size:15px;line-height:2.1;white-space:pre-line}
 .message button{
- margin-top:28px;padding:9px 28px;background:transparent;
- color:#f8e9c7;border:1px solid #c7a363;letter-spacing:3px
+  margin-top:25px;padding:9px 28px;
+  color:#f7e9ca;background:transparent;
+  border:1px solid #c8a76a;letter-spacing:3px;
 }
 </style>
 </head>
+
 <body>
 
 <div id="intro">
- <h1>MERRY CHRISTMAS</h1>
- <p>A NIGHT FULL OF LIGHT AND MIRACLES</p>
+  <h1>Merry Christmas</h1>
+  <p>A night full of light and miracles</p>
+  <div class="touch">✦ TOUCH THE SCREEN TO BEGIN ✦</div>
 </div>
 
-<div id="hint">點擊聖誕樹，迎接聖誕奇蹟 ✦ 點擊樹頂星星，收下祝福</div>
+<div id="hint">
+  點擊聖誕樹，迎接聖誕奇蹟 ✦ 點擊樹頂星星，收下祝福
+</div>
 
 <div id="blessing">
- <div class="message">
-  <h2>✦ MERRY CHRISTMAS ✦</h2>
-  <p id="blessingText"></p>
-  <button onclick="closeBlessing()">CLOSE</button>
- </div>
+  <div class="message">
+    <h2>✦ MERRY CHRISTMAS ✦</h2>
+    <p id="blessingText"></p>
+    <button id="closeBlessing">CLOSE</button>
+  </div>
 </div>
 
 <script type="module">
 import * as THREE from
 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-/* =========================
-   SCENE
-========================= */
+/* =====================================
+   SCENE AND CAMERA
+===================================== */
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x03132d);
-scene.fog=new THREE.FogExp2(0x061a38,.008);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x03142e);
+scene.fog = new THREE.FogExp2(0x061a37, 0.009);
 
-const camera=new THREE.PerspectiveCamera(
- 45,innerWidth/innerHeight,.1,150
+const camera = new THREE.PerspectiveCamera(
+  44, innerWidth / innerHeight, 0.1, 150
 );
-camera.position.set(0,7.2,25);
-camera.lookAt(0,5.2,0);
+camera.position.set(0, 7.2, 25);
+camera.lookAt(0, 5.1, 0);
 
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.25;
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: false
+});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xaecfff,0x17253a,1.4));
+/* =====================================
+   LIGHTING
+===================================== */
 
-const moon=new THREE.DirectionalLight(0xa9cfff,2.1);
-moon.position.set(-8,15,10);
-moon.castShadow=true;
+scene.add(new THREE.HemisphereLight(0xb8d3f4, 0x182b38, 1.45));
+
+const moon = new THREE.DirectionalLight(0xb6d3ff, 2.0);
+moon.position.set(-9, 17, 10);
+moon.castShadow = true;
 scene.add(moon);
 
-const warmLight=new THREE.PointLight(0xffc76d,90,30);
-warmLight.position.set(0,8,5);
-scene.add(warmLight);
+const blueFill = new THREE.PointLight(0x3979bd, 100, 45);
+blueFill.position.set(8, 7, -8);
+scene.add(blueFill);
 
-const blueLight=new THREE.PointLight(0x397dce,100,45);
-blueLight.position.set(8,5,-8);
-scene.add(blueLight);
+const goldenFill = new THREE.PointLight(0xffc86f, 70, 28);
+goldenFill.position.set(0, 5, 5);
+scene.add(goldenFill);
 
-/* =========================
-   STARFIELD
-========================= */
+/* =====================================
+   DISTANT TWINKLING STARS
+===================================== */
 
-const starPositions=[];
-for(let i=0;i<1600;i++){
- starPositions.push(
-  (Math.random()-.5)*100,
-  Math.random()*60-3,
-  -15-Math.random()*45
- );
+const starCount = 1800;
+const starPositions = new Float32Array(starCount * 3);
+
+for(let i=0;i<starCount;i++){
+  starPositions[i*3] = (Math.random()-.5)*100;
+  starPositions[i*3+1] = Math.random()*55-2;
+  starPositions[i*3+2] = -18-Math.random()*40;
 }
-const starGeo=new THREE.BufferGeometry();
-starGeo.setAttribute('position',
- new THREE.Float32BufferAttribute(starPositions,3));
-const starMat=new THREE.PointsMaterial({
- color:0xffedca,size:.13,transparent:true,opacity:.9
+
+const starGeometry = new THREE.BufferGeometry();
+starGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(starPositions,3)
+);
+
+const starMaterial = new THREE.PointsMaterial({
+  color:0xffedcf,
+  size:.13,
+  transparent:true,
+  opacity:.85,
+  sizeAttenuation:true
 });
-const starField=new THREE.Points(starGeo,starMat);
+
+const starField = new THREE.Points(starGeometry,starMaterial);
 scene.add(starField);
 
-/* =========================
-   SNOW: TOWARD THE CAMERA
-========================= */
+/* =====================================
+   SNOW: DEPTH AND TOWARD THE CAMERA
+===================================== */
 
-const snowCount=2400;
-const snowPos=new Float32Array(snowCount*3);
-const snowSpeed=new Float32Array(snowCount);
-const snowSize=new Float32Array(snowCount);
+const SNOW_COUNT = 2600;
+const snowPositions = new Float32Array(SNOW_COUNT*3);
+const snowSpeeds = new Float32Array(SNOW_COUNT);
+const snowSizes = new Float32Array(SNOW_COUNT);
 
-for(let i=0;i<snowCount;i++){
- snowPos[i*3]=(Math.random()-.5)*42;
- snowPos[i*3+1]=Math.random()*34-2;
- snowPos[i*3+2]=-28+Math.random()*42;
- snowSpeed[i]=1.5+Math.random()*5;
- snowSize[i]=Math.random();
+for(let i=0;i<SNOW_COUNT;i++){
+  snowPositions[i*3] = (Math.random()-.5)*42;
+  snowPositions[i*3+1] = Math.random()*36-2;
+  snowPositions[i*3+2] = -30+Math.random()*45;
+  snowSpeeds[i] = 1.2+Math.random()*5.5;
+  snowSizes[i] = Math.random();
 }
-const snowGeo=new THREE.BufferGeometry();
-snowGeo.setAttribute('position',
- new THREE.BufferAttribute(snowPos,3));
-const snowMat=new THREE.PointsMaterial({
- color:0xe8f3ff,size:.16,transparent:true,
- opacity:.85,sizeAttenuation:true
+
+const snowGeometry = new THREE.BufferGeometry();
+snowGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(snowPositions,3)
+);
+
+const snowMaterial = new THREE.PointsMaterial({
+  color:0xe6f1ff,
+  size:.17,
+  transparent:true,
+  opacity:.82,
+  sizeAttenuation:true
 });
-const snow=new THREE.Points(snowGeo,snowMat);
+
+const snow = new THREE.Points(snowGeometry,snowMaterial);
 scene.add(snow);
 
-/* =========================
-   GROUND
-========================= */
+/* =====================================
+   SNOWY GROUND
+===================================== */
 
-const ground=new THREE.Mesh(
- new THREE.CircleGeometry(45,80),
- new THREE.MeshStandardMaterial({
-  color:0x0a1d35,roughness:.95
- })
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(40,90),
+  new THREE.MeshStandardMaterial({
+    color:0x142a42,
+    roughness:.95,
+    metalness:.02
+  })
 );
 ground.rotation.x=-Math.PI/2;
-ground.position.y=-.12;
-ground.position.z=-2;
+ground.position.set(0,-.16,-2);
 ground.receiveShadow=true;
 scene.add(ground);
 
-/* =========================
-   CHRISTMAS TREE
-   Natural branches + fine needles
-========================= */
+/* =====================================
+   TREE: NATURAL FIR BRANCHES
+   No cone-shaped tree.
+===================================== */
 
-const tree=new THREE.Group();
+const tree = new THREE.Group();
 scene.add(tree);
 
-const trunkMat=new THREE.MeshStandardMaterial({
- color:0x493526,roughness:1
+const treeHeight = 9.5;
+const treeRadius = 4.15;
+
+const trunkMaterial = new THREE.MeshStandardMaterial({
+  color:0x493426,roughness:1
 });
-const trunk=new THREE.Mesh(
- new THREE.CylinderGeometry(.17,.32,9.4,12),trunkMat
+
+const trunk = new THREE.Mesh(
+  new THREE.CylinderGeometry(.16,.32,9.5,12),
+  trunkMaterial
 );
-trunk.position.y=4.6;
+trunk.position.y=4.65;
 trunk.castShadow=true;
 tree.add(trunk);
 
-const darkGreen=new THREE.MeshStandardMaterial({
- color:0x102e22,roughness:.95
+const pineDark = new THREE.MeshStandardMaterial({
+  color:0x102e21,roughness:.96
 });
-const green=new THREE.MeshStandardMaterial({
- color:0x194531,roughness:.93
+const pineMid = new THREE.MeshStandardMaterial({
+  color:0x17412d,roughness:.94
 });
-const lightGreen=new THREE.MeshStandardMaterial({
- color:0x28553a,roughness:.94
+const pineLight = new THREE.MeshStandardMaterial({
+  color:0x24563a,roughness:.92
 });
-const wood=new THREE.MeshStandardMaterial({
- color:0x503923,roughness:1
+const twigMaterial = new THREE.MeshStandardMaterial({
+  color:0x55402c,roughness:1
 });
 
-const branchLayers=[];
-const treeHeight=9.3;
-const layerCount=18;
+/* Individual branch with fine needle clusters */
+function createFirBranch(length, material){
+  const group = new THREE.Group();
 
-function makeBranch(length,material){
- const g=new THREE.Group();
+  const stem = new THREE.Mesh(
+    new THREE.CylinderGeometry(.012,.04,length,5),
+    twigMaterial
+  );
+  stem.rotation.z=Math.PI/2;
+  stem.position.x=length/2;
+  group.add(stem);
 
- const stem=new THREE.Mesh(
-  new THREE.CylinderGeometry(.018,.045,length,5),
-  wood
- );
- stem.rotation.z=Math.PI/2;
- stem.position.x=length/2;
- g.add(stem);
+  // Small secondary twigs
+  for(let j=0;j<7;j++){
+    const x=length*(.2+j*.105);
+    const side=j%2===0?1:-1;
 
- // Many fine needle clusters along each branch
- for(let j=0;j<9;j++){
-  const x=length*(.12+j*.09);
-  const needleGroup=new THREE.Group();
+    const twig = new THREE.Mesh(
+      new THREE.CylinderGeometry(.008,.018,length*.22,4),
+      twigMaterial
+    );
+    twig.position.set(x,side*length*.075,0);
+    twig.rotation.z=side*-.55;
+    group.add(twig);
 
-  for(let k=0;k<5;k++){
-   const needle=new THREE.Mesh(
-    new THREE.ConeGeometry(.045,.52,4),
-    Math.random()>.45?material:green
-   );
-   needle.rotation.z=Math.PI/2;
-   needle.rotation.y=(Math.random()-.5)*.9;
-   needle.position.set(
-    (Math.random()-.5)*.12,
-    (Math.random()-.5)*.22,
-    (Math.random()-.5)*.22
-   );
-   needleGroup.add(needle);
+    // Needle sprays
+    for(let k=0;k<4;k++){
+      const needle = new THREE.Mesh(
+        new THREE.ConeGeometry(.035,length*.19,4),
+        Math.random()>.5?material:pineMid
+      );
+      needle.rotation.z=Math.PI/2;
+      needle.rotation.y=(Math.random()-.5)*.9;
+      needle.position.set(
+        x+(Math.random()-.5)*.12,
+        side*length*(.08+k*.018),
+        (Math.random()-.5)*.12
+      );
+      group.add(needle);
+    }
   }
 
-  needleGroup.position.set(x,0,0);
-  needleGroup.rotation.z=-.35;
-  g.add(needleGroup);
- }
+  // Fine needles along the branch
+  for(let j=0;j<12;j++){
+    const needle = new THREE.Mesh(
+      new THREE.ConeGeometry(.032,.34,4),
+      Math.random()>.5?material:pineDark
+    );
+    needle.rotation.z=Math.PI/2;
+    needle.rotation.y=(Math.random()-.5)*1.1;
+    needle.position.set(
+      length*(.12+j*.065),
+      (Math.random()-.5)*.18,
+      (Math.random()-.5)*.18
+    );
+    group.add(needle);
+  }
 
- return g;
+  return group;
 }
+
+/* Irregular, overlapping layers make a natural silhouette */
+const branchLayers=[];
+const layerCount=19;
 
 for(let layer=0;layer<layerCount;layer++){
- const layerGroup=new THREE.Group();
- const t=layer/(layerCount-1);
- const y=.55+t*8.35;
- const radius=4.05*(1-t*.91);
- const branchTotal=20;
+  const layerGroup=new THREE.Group();
+  const t=layer/(layerCount-1);
+  const y=.45+t*8.75;
+  const radius=treeRadius*(1-Math.pow(t,.85)*.94);
+  const branches=24;
 
- for(let i=0;i<branchTotal;i++){
-  const angle=i/branchTotal*Math.PI*2+
-    layer*.43+Math.random()*.12;
-  const len=radius*(.72+Math.random()*.38);
+  for(let i=0;i<branches;i++){
+    const angle=(i/branches)*Math.PI*2+
+      layer*.31+(Math.random()-.5)*.12;
 
-  const b=makeBranch(
-   len,Math.random()>.5?darkGreen:lightGreen
-  );
+    const length=radius*(.72+Math.random()*.42);
+    const branch=createFirBranch(
+      length,
+      [pineDark,pineMid,pineLight][Math.floor(Math.random()*3)]
+    );
 
-  b.position.set(
-   Math.cos(angle)*.12,
-   y,
-   Math.sin(angle)*.12
-  );
-  b.rotation.y=-angle;
-  b.rotation.z=-.13+Math.random()*.17;
-  b.scale.setScalar(.8+Math.random()*.35);
-  layerGroup.add(b);
- }
+    branch.position.set(
+      Math.cos(angle)*.1,
+      y,
+      Math.sin(angle)*.1
+    );
 
- tree.add(layerGroup);
- branchLayers.push(layerGroup);
+    branch.rotation.y=-angle;
+    branch.rotation.z=-.12+Math.random()*.18;
+    branch.scale.set(
+      .86+Math.random()*.28,
+      .9+Math.random()*.25,
+      .86+Math.random()*.28
+    );
+
+    layerGroup.add(branch);
+  }
+
+  tree.add(layerGroup);
+  branchLayers.push(layerGroup);
 }
 
-/* =========================
-   SPIRAL LIGHT TRAIL
-========================= */
+/* =====================================
+   GOLDEN SPIRAL
+===================================== */
 
 const spiralPoints=[];
 const spiralTurns=7.5;
+const spiralSegments=1500;
 
-for(let i=0;i<=1200;i++){
- const t=i/1200;
- const a=t*Math.PI*2*spiralTurns;
- const r=4.2*(1-t*.94);
- spiralPoints.push(new THREE.Vector3(
-  Math.cos(a)*r,
-  t*9.55,
-  Math.sin(a)*r
- ));
+for(let i=0;i<=spiralSegments;i++){
+  const t=i/spiralSegments;
+  const angle=t*Math.PI*2*spiralTurns;
+  const radius=treeRadius*(1-t*.94);
+
+  spiralPoints.push(new THREE.Vector3(
+    Math.cos(angle)*radius,
+    t*9.7,
+    Math.sin(angle)*radius
+  ));
 }
 
 const spiralCurve=new THREE.CatmullRomCurve3(spiralPoints);
-const spiralGeo=new THREE.BufferGeometry().setFromPoints(
- spiralCurve.getPoints(1200)
+
+const spiralGeometry=new THREE.BufferGeometry();
+spiralGeometry.setFromPoints(
+  spiralCurve.getPoints(spiralSegments)
 );
-const spiralMat=new THREE.LineBasicMaterial({
- color:0xffd88c,transparent:true,opacity:0,
- blending:THREE.AdditiveBlending
+
+const spiralMaterial=new THREE.LineBasicMaterial({
+  color:0xffd88b,
+  transparent:true,
+  opacity:0,
+  blending:THREE.AdditiveBlending
 });
-const spiral=new THREE.Line(spiralGeo,spiralMat);
+
+const spiral=new THREE.Line(spiralGeometry,spiralMaterial);
+spiralGeometry.setDrawRange(0,0);
 tree.add(spiral);
 
-/* Glowing particles travelling along the spiral */
+/* A bright star travels along the spiral */
+const movingStar = new THREE.Mesh(
+  new THREE.SphereGeometry(.13,12,12),
+  new THREE.MeshBasicMaterial({
+    color:0xfff1bd,
+    transparent:true,
+    opacity:0,
+    blending:THREE.AdditiveBlending
+  })
+);
+tree.add(movingStar);
 
-const trailCount=800;
-const trailPos=new Float32Array(trailCount*3);
-const trailGeo=new THREE.BufferGeometry();
-trailGeo.setAttribute('position',
- new THREE.BufferAttribute(trailPos,3));
+const movingStarGlow=new THREE.PointLight(0xffd17a,30,5);
+movingStar.add(movingStarGlow);
 
-const trailMat=new THREE.PointsMaterial({
- color:0xffd37a,size:.095,transparent:true,
- opacity:0,blending:THREE.AdditiveBlending
+/* Fine golden particles along the spiral */
+const trailCount=500;
+const trailPositions=new Float32Array(trailCount*3);
+const trailGeometry=new THREE.BufferGeometry();
+trailGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(trailPositions,3)
+);
+
+const trailMaterial=new THREE.PointsMaterial({
+  color:0xffd17a,
+  size:.075,
+  transparent:true,
+  opacity:0,
+  blending:THREE.AdditiveBlending
 });
-const trail=new THREE.Points(trailGeo,trailMat);
+
+const trail=new THREE.Points(trailGeometry,trailMaterial);
 tree.add(trail);
 
-/* =========================
-   CHRISTMAS LIGHTS
-========================= */
+/* =====================================
+   TREE LIGHTS
+===================================== */
 
-const lights=[];
-const lightColors=[0xffd17b,0xfff1cf,0xc6ddff,0xe5b0a1];
+const treeLights=[];
+const lightColors=[0xffd17b,0xfff0cb,0xd5e5ff,0xe8b7a0];
 
-for(let i=0;i<170;i++){
- const t=.04+Math.random()*.92;
- const a=Math.random()*Math.PI*2;
- const r=4.0*(1-t*.91);
+for(let i=0;i<190;i++){
+  const t=.04+Math.random()*.92;
+  const angle=Math.random()*Math.PI*2;
+  const radius=treeRadius*(1-t*.92);
 
- const bulb=new THREE.Mesh(
-  new THREE.SphereGeometry(.055,10,10),
-  new THREE.MeshBasicMaterial({
-   color:lightColors[i%lightColors.length],
-   transparent:true,opacity:0
-  })
- );
+  const bulb=new THREE.Mesh(
+    new THREE.SphereGeometry(.052,10,10),
+    new THREE.MeshBasicMaterial({
+      color:lightColors[i%lightColors.length],
+      transparent:true,
+      opacity:0
+    })
+  );
 
- bulb.position.set(Math.cos(a)*r,t*9.3,
-                   Math.sin(a)*r);
- tree.add(bulb);
- lights.push(bulb);
+  bulb.position.set(
+    Math.cos(angle)*radius,
+    t*9.45,
+    Math.sin(angle)*radius
+  );
+  tree.add(bulb);
+  treeLights.push(bulb);
 }
 
-/* Ornaments */
-
+/* Christmas ornaments */
 const ornaments=[];
-for(let i=0;i<32;i++){
- const t=.15+Math.random()*.72;
- const a=Math.random()*Math.PI*2;
- const r=3.9*(1-t*.91);
+const ornamentColors=[0x9e1e2d,0xc9a04f,0x244d6b,0x9c283a];
 
- const ball=new THREE.Mesh(
-  new THREE.SphereGeometry(.13,20,20),
-  new THREE.MeshPhysicalMaterial({
-   color:[0x9f1f2d,0xc49a46,0x244a6a][i%3],
-   metalness:.75,roughness:.18,clearcoat:1
-  })
- );
- ball.position.set(Math.cos(a)*r,t*9.3,
-                   Math.sin(a)*r);
- ball.visible=false;
- tree.add(ball);
- ornaments.push(ball);
+for(let i=0;i<34;i++){
+  const t=.14+Math.random()*.76;
+  const angle=Math.random()*Math.PI*2;
+  const radius=treeRadius*(1-t*.92);
+
+  const ball=new THREE.Mesh(
+    new THREE.SphereGeometry(.13,20,20),
+    new THREE.MeshPhysicalMaterial({
+      color:ornamentColors[i%ornamentColors.length],
+      metalness:.72,
+      roughness:.2,
+      clearcoat:1
+    })
+  );
+
+  ball.position.set(
+    Math.cos(angle)*radius,
+    t*9.45,
+    Math.sin(angle)*radius
+  );
+  ball.visible=false;
+  tree.add(ball);
+  ornaments.push(ball);
 }
 
-/* =========================
-   TREE TOP STAR
-========================= */
+/* =====================================
+   TOP STAR
+===================================== */
 
 const starGroup=new THREE.Group();
 starGroup.position.y=10.05;
 tree.add(starGroup);
 
-const shape=new THREE.Shape();
+const starShape=new THREE.Shape();
 for(let i=0;i<10;i++){
- const a=Math.PI/2+i*Math.PI/5;
- const r=i%2===0?.58:.25;
- const x=Math.cos(a)*r;
- const y=Math.sin(a)*r;
- if(i===0)shape.moveTo(x,y);
- else shape.lineTo(x,y);
+  const angle=Math.PI/2+i*Math.PI/5;
+  const r=i%2===0?.58:.25;
+  const x=Math.cos(angle)*r;
+  const y=Math.sin(angle)*r;
+  if(i===0)starShape.moveTo(x,y);
+  else starShape.lineTo(x,y);
 }
-shape.closePath();
+starShape.closePath();
 
 const topStar=new THREE.Mesh(
- new THREE.ExtrudeGeometry(shape,{
-  depth:.12,bevelEnabled:true,
-  bevelThickness:.035,bevelSize:.03,
-  bevelSegments:3
- }),
- new THREE.MeshStandardMaterial({
-  color:0xffe0a0,emissive:0xffb52f,
-  emissiveIntensity:2.5,metalness:.75,roughness:.18
- })
+  new THREE.ExtrudeGeometry(starShape,{
+    depth:.12,
+    bevelEnabled:true,
+    bevelThickness:.04,
+    bevelSize:.03,
+    bevelSegments:3
+  }),
+  new THREE.MeshStandardMaterial({
+    color:0xffe0a0,
+    emissive:0xffb52f,
+    emissiveIntensity:2.4,
+    metalness:.75,
+    roughness:.18
+  })
 );
 starGroup.add(topStar);
 
-const starLamp=new THREE.PointLight(0xffd37a,70,12);
-starLamp.position.set(0,0,1);
-starGroup.add(starLamp);
+const topStarLight=new THREE.PointLight(0xffd17a,65,12);
+topStarLight.position.set(0,0,1);
+starGroup.add(topStarLight);
 starGroup.visible=false;
 
-/* =========================
-   GIFT BOXES
-========================= */
+/* =====================================
+   GIFT BOX MODEL
+===================================== */
 
 function createGift(color,ribbonColor,scale=1){
- const g=new THREE.Group();
+  const group=new THREE.Group();
 
- const boxMat=new THREE.MeshStandardMaterial({
-  color,metalness:.2,roughness:.35
- });
- const ribbonMat=new THREE.MeshStandardMaterial({
-  color:ribbonColor,metalness:.7,roughness:.22
- });
+  const boxMaterial=new THREE.MeshStandardMaterial({
+    color,metalness:.22,roughness:.35
+  });
+  const ribbonMaterial=new THREE.MeshStandardMaterial({
+    color:ribbonColor,metalness:.72,roughness:.22
+  });
 
- const box=new THREE.Mesh(
-  new THREE.BoxGeometry(.8,.65,.72),boxMat
- );
- g.add(box);
-
- const ribbonA=new THREE.Mesh(
-  new THREE.BoxGeometry(.11,.67,.74),ribbonMat
- );
- const ribbonB=new THREE.Mesh(
-  new THREE.BoxGeometry(.82,.67,.11),ribbonMat
- );
- g.add(ribbonA,ribbonB);
-
- const bowMat=ribbonMat;
- for(const side of [-1,1]){
-  const loop=new THREE.Mesh(
-   new THREE.TorusGeometry(.14,.035,8,16),
-   bowMat
+  const box=new THREE.Mesh(
+    new THREE.BoxGeometry(.78,.62,.72),
+    boxMaterial
   );
-  loop.position.set(side*.1,.39,0);
-  loop.rotation.y=side*.5;
-  g.add(loop);
- }
- g.scale.setScalar(scale);
- return g;
+  group.add(box);
+
+  const ribbon1=new THREE.Mesh(
+    new THREE.BoxGeometry(.11,.64,.74),
+    ribbonMaterial
+  );
+  const ribbon2=new THREE.Mesh(
+    new THREE.BoxGeometry(.8,.64,.11),
+    ribbonMaterial
+  );
+  group.add(ribbon1,ribbon2);
+
+  // Ribbon loops
+  for(const side of [-1,1]){
+    const loop=new THREE.Mesh(
+      new THREE.TorusGeometry(.13,.035,8,18),
+      ribbonMaterial
+    );
+    loop.position.set(side*.11,.37,0);
+    loop.rotation.y=side*.55;
+    group.add(loop);
+  }
+
+  group.scale.setScalar(scale);
+  return group;
 }
 
-/* =========================
-   SANTA
-========================= */
+/* =====================================
+   SANTA CLAUS
+===================================== */
 
-function makeSanta(){
- const g=new THREE.Group();
+function createSanta(){
+  const santa=new THREE.Group();
 
- const red=new THREE.MeshStandardMaterial({
-  color:0x8f1726,roughness:.9
- });
- const fur=new THREE.MeshStandardMaterial({
-  color:0xf2e8d8,roughness:1
- });
- const skin=new THREE.MeshStandardMaterial({
-  color:0xc9906e,roughness:.9
- });
- const beard=new THREE.MeshStandardMaterial({
-  color:0xe9e5dc,roughness:1
- });
- const black=new THREE.MeshStandardMaterial({
-  color:0x17191b,roughness:.7
- });
- const gold=new THREE.MeshStandardMaterial({
-  color:0xd6ac5e,metalness:.7,roughness:.3
- });
+  const velvet=new THREE.MeshStandardMaterial({
+    color:0x941a29,roughness:.88
+  });
+  const fur=new THREE.MeshStandardMaterial({
+    color:0xf0e9dc,roughness:1
+  });
+  const skin=new THREE.MeshStandardMaterial({
+    color:0xc98e6e,roughness:.9
+  });
+  const beardMat=new THREE.MeshStandardMaterial({
+    color:0xe6e3dc,roughness:1
+  });
+  const black=new THREE.MeshStandardMaterial({
+    color:0x17191d,roughness:.7
+  });
+  const gold=new THREE.MeshStandardMaterial({
+    color:0xd3aa5d,metalness:.7,roughness:.3
+  });
 
- function ball(mat,x,y,z,sx,sy,sz){
-  const m=new THREE.Mesh(
-   new THREE.SphereGeometry(1,24,20),mat
+  function sphere(mat,x,y,z,sx,sy,sz){
+    const mesh=new THREE.Mesh(
+      new THREE.SphereGeometry(1,22,18),mat
+    );
+    mesh.position.set(x,y,z);
+    mesh.scale.set(sx,sy,sz);
+    mesh.castShadow=true;
+    santa.add(mesh);
+    return mesh;
+  }
+
+  // Red velvet coat
+  sphere(velvet,0,0,0,.55,.72,.43);
+  sphere(fur,0,-.65,0,.56,.12,.44);
+  sphere(fur,0,.63,0,.31,.12,.32);
+
+  // Face, cheeks and beard
+  sphere(skin,0,1.02,0,.34,.36,.32);
+  sphere(beardMat,0,.73,.12,.34,.34,.29);
+
+  for(let i=0;i<11;i++){
+    sphere(
+      beardMat,
+      -.22+(i%4)*.145,
+      .58-Math.floor(i/4)*.12,
+      .29,
+      .085,.11,.07
+    );
+  }
+
+  // Moustache, nose and eyes
+  sphere(beardMat,-.13,.88,.31,.15,.075,.07);
+  sphere(beardMat,.13,.88,.31,.15,.075,.07);
+  sphere(skin,0,.96,.34,.065,.06,.05);
+  sphere(black,-.12,1.08,.29,.032,.04,.025);
+  sphere(black,.12,1.08,.29,.032,.04,.025);
+
+  // Santa hat
+  sphere(velvet,0,1.42,0,.26,.38,.25);
+  sphere(fur,0,1.23,0,.36,.1,.3);
+  sphere(fur,.15,1.77,0,.12,.12,.12);
+
+  // Sleeves, cuffs and gloves
+  for(const side of [-1,1]){
+    const arm=sphere(
+      velvet,side*.57,.12,0,.16,.39,.17
+    );
+    arm.rotation.z=side*.42;
+    sphere(fur,side*.72,-.12,.02,.15,.13,.15);
+    sphere(black,side*.34,-.83,.05,.19,.14,.24);
+  }
+
+  // Belt and buckle
+  const belt=new THREE.Mesh(
+    new THREE.TorusGeometry(.4,.045,8,32),
+    black
   );
-  m.position.set(x,y,z);
-  m.scale.set(sx,sy,sz);
-  m.castShadow=true;
-  g.add(m);
-  return m;
- }
+  belt.position.y=-.12;
+  belt.rotation.x=Math.PI/2;
+  belt.scale.set(1,.72,1);
+  santa.add(belt);
 
- // Velvet body
- ball(red,0,0,0,.55,.72,.43);
-
- // Fur hem and collar
- ball(fur,0,-.65,0,.55,.13,.44);
- ball(fur,0,.65,0,.3,.12,.31);
-
- // Head and face
- ball(skin,0,1.02,0,.34,.36,.32);
- ball(beard,0,.72,.14,.33,.32,.28);
-
- // Beard texture-like curls
- for(let i=0;i<9;i++){
-  ball(beard,
-   -.22+(i%3)*.22,
-   .52-Math.floor(i/3)*.11,
-   .28,
-   .09,.12,.08
+  const buckle=new THREE.Mesh(
+    new THREE.BoxGeometry(.15,.14,.05),gold
   );
- }
+  buckle.position.set(0,-.12,.4);
+  santa.add(buckle);
 
- // Hat
- ball(red,0,1.43,0,.27,.38,.25);
- ball(fur,0,1.22,0,.36,.1,.3);
- ball(fur,.14,1.76,0,.12,.12,.12);
-
- // Eyes, nose and moustache
- ball(black,-.12,1.06,.29,.035,.04,.025);
- ball(black,.12,1.06,.29,.035,.04,.025);
- ball(skin,0,.94,.34,.07,.06,.06);
- ball(beard,-.13,.83,.31,.15,.08,.08);
- ball(beard,.13,.83,.31,.15,.08,.08);
-
- // Arms, fur cuffs
- for(const side of [-1,1]){
-  const arm=ball(red,side*.58,.1,0,.16,.38,.17);
-  arm.rotation.z=side*.4;
-  ball(fur,side*.72,-.13,.03,.15,.13,.15);
-  ball(black,side*.35,-.84,.04,.19,.14,.25);
- }
-
- // Belt and buckle
- const belt=new THREE.Mesh(
-  new THREE.TorusGeometry(.4,.045,8,32),
-  black
- );
- belt.position.y=-.1;
- belt.rotation.x=Math.PI/2;
- belt.scale.set(1,.72,1);
- g.add(belt);
-
- const buckle=new THREE.Mesh(
-  new THREE.BoxGeometry(.16,.15,.06),gold
- );
- buckle.position.set(0,-.1,.4);
- g.add(buckle);
-
- return g;
+  return santa;
 }
 
-/* =========================
+/* =====================================
    SLEIGH
-========================= */
+===================================== */
 
-function makeSleigh(){
- const g=new THREE.Group();
+function createSleigh(){
+  const group=new THREE.Group();
 
- const red=new THREE.MeshStandardMaterial({
-  color:0x8c1727,metalness:.35,roughness:.3
- });
- const gold=new THREE.MeshStandardMaterial({
-  color:0xd1a04f,metalness:.85,roughness:.2
- });
+  const red=new THREE.MeshStandardMaterial({
+    color:0x861725,metalness:.35,roughness:.32
+  });
+  const gold=new THREE.MeshStandardMaterial({
+    color:0xd4a34f,metalness:.86,roughness:.2
+  });
+  const darkRed=new THREE.MeshStandardMaterial({
+    color:0x48151d,roughness:.6
+  });
 
- const base=new THREE.Mesh(
-  new THREE.BoxGeometry(2.4,.45,1.05),red
- );
- base.position.y=.25;
- g.add(base);
-
- const back=new THREE.Mesh(
-  new THREE.BoxGeometry(.2,1.2,1.05),red
- );
- back.position.set(1.05,.78,0);
- g.add(back);
-
- const front=new THREE.Mesh(
-  new THREE.SphereGeometry(.2,16,12),
-  red
- );
- front.scale.set(1,1,2.2);
- front.position.set(-1.2,.3,0);
- g.add(front);
-
- // Golden runners
- for(const z of [-.46,.46]){
-  const rail=new THREE.Mesh(
-   new THREE.CylinderGeometry(.045,.045,3.1,12),gold
+  const body=new THREE.Mesh(
+    new THREE.BoxGeometry(2.4,.43,1.05),red
   );
-  rail.rotation.z=Math.PI/2;
-  rail.position.set(0,-.25,z);
-  g.add(rail);
+  body.position.y=.28;
+  group.add(body);
 
-  const curl=new THREE.Mesh(
-   new THREE.TorusGeometry(.28,.045,8,24,Math.PI),
-   gold
+  const back=new THREE.Mesh(
+    new THREE.BoxGeometry(.2,1.18,1.05),red
   );
-  curl.position.set(-1.25,-.05,z);
-  curl.rotation.z=Math.PI;
-  g.add(curl);
- }
+  back.position.set(1.05,.78,0);
+  group.add(back);
 
- // Seat
- const cushion=new THREE.Mesh(
-  new THREE.BoxGeometry(1.3,.16,.8),
-  new THREE.MeshStandardMaterial({color:0x4b1820,roughness:.9})
- );
- cushion.position.set(.1,.52,0);
- g.add(cushion);
-
- // Santa
- const santa=makeSanta();
- santa.scale.setScalar(.65);
- santa.position.set(.15,.55,0);
- g.add(santa);
-
- // Presents on the sleigh
- const presentColors=[
-  [0x9b1d2c,0xe4c16c],
-  [0x173c66,0xd7c28f],
-  [0x1c5036,0xd8b56a]
- ];
- for(let i=0;i<3;i++){
-  const gift=createGift(
-   presentColors[i][0],presentColors[i][1],.5
+  const front=new THREE.Mesh(
+    new THREE.SphereGeometry(.3,20,16),red
   );
-  gift.position.set(-.5+i*.45,.9,.12);
-  g.add(gift);
- }
- return g;
+  front.scale.set(1.5,.8,1.8);
+  front.position.set(-1.18,.36,0);
+  group.add(front);
+
+  const seat=new THREE.Mesh(
+    new THREE.BoxGeometry(1.25,.16,.8),darkRed
+  );
+  seat.position.set(.05,.54,0);
+  group.add(seat);
+
+  // Gold runners and curled ends
+  for(const z of [-.46,.46]){
+    const runner=new THREE.Mesh(
+      new THREE.CylinderGeometry(.045,.045,3.2,12),gold
+    );
+    runner.rotation.z=Math.PI/2;
+    runner.position.set(0,-.25,z);
+    group.add(runner);
+
+    const curl=new THREE.Mesh(
+      new THREE.TorusGeometry(.27,.045,8,24,Math.PI),
+      gold
+    );
+    curl.position.set(-1.27,-.05,z);
+    curl.rotation.z=Math.PI;
+    group.add(curl);
+  }
+
+  // Decorative gold side detail
+  const sideLine=new THREE.Mesh(
+    new THREE.BoxGeometry(1.8,.035,.035),gold
+  );
+  sideLine.position.set(0,.48,.54);
+  group.add(sideLine);
+
+  const santa=createSanta();
+  santa.scale.setScalar(.66);
+  santa.position.set(.18,.58,0);
+  group.add(santa);
+
+  // Small presents in the sleigh
+  const giftColors=[
+    [0x9b1d2c,0xe4c16c],
+    [0x173c66,0xd7c28f],
+    [0x1c5036,0xd8b56a]
+  ];
+
+  for(let i=0;i<3;i++){
+    const gift=createGift(
+      giftColors[i][0],giftColors[i][1],.48
+    );
+    gift.position.set(-.55+i*.4,.88,.05);
+    group.add(gift);
+  }
+
+  return group;
 }
 
-/* =========================
-   REINDEER
-========================= */
+/* =====================================
+   THREE REINDEER
+===================================== */
 
-function makeDeer(){
- const g=new THREE.Group();
+function createDeer(){
+  const deer=new THREE.Group();
 
- const brown=new THREE.MeshStandardMaterial({
-  color:0x75482e,roughness:.94
- });
- const darkBrown=new THREE.MeshStandardMaterial({
-  color:0x4a2b20,roughness:.95
- });
- const antlerMat=new THREE.MeshStandardMaterial({
-  color:0xb89c72,roughness:.9
- });
- const black=new THREE.MeshStandardMaterial({
-  color:0x171614,roughness:.7
- });
+  const brown=new THREE.MeshStandardMaterial({
+    color:0x70452c,roughness:.95
+  });
+  const darkBrown=new THREE.MeshStandardMaterial({
+    color:0x43291e,roughness:.95
+  });
+  const antlerMat=new THREE.MeshStandardMaterial({
+    color:0xb69a70,roughness:.9
+  });
+  const black=new THREE.MeshStandardMaterial({
+    color:0x171614,roughness:.7
+  });
 
- function part(geo,mat,x,y,z,sx,sy,sz){
-  const m=new THREE.Mesh(geo,mat);
-  m.position.set(x,y,z);
-  m.scale.set(sx,sy,sz);
-  m.castShadow=true;
-  g.add(m);
-  return m;
- }
-
- // Body
- part(new THREE.SphereGeometry(1,20,16),brown,
-      0,0,0,.7,.4,.32);
-
- // Neck, head and muzzle: face left
- part(new THREE.CylinderGeometry(.13,.2,.85,12),
-      brown,-.42,.45,0,1,1,1).rotation.z=.45;
-
- part(new THREE.SphereGeometry(1,20,16),brown,
-      -.78,.88,0,.28,.3,.25);
- part(new THREE.SphereGeometry(1,16,12),darkBrown,
-      -1.02,.76,0,.18,.12,.17);
-
- // Eyes
- for(const z of [-.19,.19]){
-  part(new THREE.SphereGeometry(.045,10,10),black,
-       -.83,.96,z,1,1,1);
- }
-
- // Legs
- for(const x of [-.43,.42]){
-  for(const z of [-.2,.2]){
-   const leg=part(
-    new THREE.CylinderGeometry(.045,.065,.75,8),
-    brown,x,-.48,z,1,1,1
-   );
-   leg.rotation.z=(x<0?-.08:.08);
-   part(new THREE.SphereGeometry(.08,10,10),
-        darkBrown,x,-.87,z,1,.65,1);
+  function part(geometry,material,x,y,z,sx,sy,sz){
+    const mesh=new THREE.Mesh(geometry,material);
+    mesh.position.set(x,y,z);
+    mesh.scale.set(sx,sy,sz);
+    mesh.castShadow=true;
+    deer.add(mesh);
+    return mesh;
   }
- }
 
- // Antlers
- for(const z of [-.14,.14]){
-  const main=part(
-   new THREE.CylinderGeometry(.025,.055,.68,7),
-   antlerMat,-.78,1.32,z,1,1,1
+  // Body
+  part(new THREE.SphereGeometry(1,20,16),brown,
+       0,0,0,.7,.4,.32);
+
+  // Neck and head face toward the left
+  const neck=part(
+    new THREE.CylinderGeometry(.13,.2,.82,12),
+    brown,-.43,.44,0,1,1,1
   );
-  main.rotation.z=-.22;
+  neck.rotation.z=.42;
 
-  for(let j=0;j<2;j++){
-   const tine=part(
-    new THREE.CylinderGeometry(.018,.035,.35,7),
-    antlerMat,-.9+j*.12,1.6+j*.08,z,1,1,1
-   );
-   tine.rotation.z=-.7;
+  part(new THREE.SphereGeometry(1,20,16),brown,
+       -.78,.88,0,.28,.3,.24);
+  part(new THREE.SphereGeometry(1,16,12),darkBrown,
+       -1.0,.76,0,.18,.12,.16);
+
+  for(const z of [-.18,.18]){
+    part(new THREE.SphereGeometry(.04,10,10),black,
+         -.84,.97,z,1,1,1);
   }
- }
 
- // Red harness
- const harness=part(
-  new THREE.TorusGeometry(.34,.025,6,20),
-  new THREE.MeshStandardMaterial({color:0x9b1e29}),
-  0,.05,0,1,.85,1
- );
- harness.rotation.x=Math.PI/2;
+  // Four legs
+  for(const x of [-.43,.42]){
+    for(const z of [-.2,.2]){
+      const leg=part(
+        new THREE.CylinderGeometry(.045,.06,.72,8),
+        brown,x,-.47,z,1,1,1
+      );
+      leg.rotation.z=x<0?-.08:.08;
 
- return g;
+      part(new THREE.SphereGeometry(.075,10,10),
+           darkBrown,x,-.85,z,1,.65,1);
+    }
+  }
+
+  // Branched antlers
+  for(const z of [-.14,.14]){
+    const main=part(
+      new THREE.CylinderGeometry(.025,.05,.68,7),
+      antlerMat,-.78,1.34,z,1,1,1
+    );
+    main.rotation.z=-.2;
+
+    for(let j=0;j<3;j++){
+      const tine=part(
+        new THREE.CylinderGeometry(.018,.03,.32,7),
+        antlerMat,
+        -.9+j*.12,
+        1.59+j*.08,
+        z,1,1,1
+      );
+      tine.rotation.z=-.72;
+    }
+  }
+
+  // Harness
+  const harness=part(
+    new THREE.TorusGeometry(.34,.025,6,24),
+    new THREE.MeshStandardMaterial({color:0x9b1d29}),
+    0,.04,0,1,.85,1
+  );
+  harness.rotation.x=Math.PI/2;
+
+  return deer;
 }
 
-/* =========================
-   FLIGHT GROUP
-========================= */
+/* =====================================
+   FLIGHT GROUP: RIGHT TO LEFT
+===================================== */
 
 const flight=new THREE.Group();
 scene.add(flight);
 
 const deerGroup=new THREE.Group();
+
 for(let i=0;i<3;i++){
- const deer=makeDeer();
- deer.position.set(-2.5-i*1.3,0,(i-1)*.55);
- deer.scale.setScalar(.64);
- deerGroup.add(deer);
+  const deer=createDeer();
+  deer.position.set(-2.1-i*1.25,0,(i-1)*.55);
+  deer.scale.setScalar(.62);
+  deerGroup.add(deer);
 }
+
 flight.add(deerGroup);
 
-const sleigh=makeSleigh();
-sleigh.position.set(2.1,.1,0);
+const sleigh=createSleigh();
+sleigh.position.set(2.15,.05,0);
 flight.add(sleigh);
 
+/* Reins connecting deer and sleigh */
 const reins=new THREE.Group();
-const reinMat=new THREE.MeshStandardMaterial({color:0xb49363});
+const reinMaterial=new THREE.MeshStandardMaterial({
+  color:0xb18b58
+});
+
 for(let i=0;i<3;i++){
- const line=new THREE.Mesh(
-  new THREE.CylinderGeometry(.018,.018,2.1,6),reinMat
- );
- line.rotation.z=Math.PI/2;
- line.position.set(-.6,.2,(i-1)*.3);
- reins.add(line);
+  const rein=new THREE.Mesh(
+    new THREE.CylinderGeometry(.018,.018,2.3,6),
+    reinMaterial
+  );
+  rein.rotation.z=Math.PI/2;
+  rein.position.set(-.8,.22,(i-1)*.28);
+  reins.add(rein);
 }
 flight.add(reins);
 
-flight.position.set(20,9,2);
 flight.visible=false;
 
-/* =========================
-   FALLING GIFTS + GOLD DUST
-========================= */
+/* =====================================
+   FALLING PRESENTS
+   They land and remain under the tree.
+===================================== */
 
 const fallingGifts=[];
-let flightActive=false;
-let flightTime=0;
+const landedGifts=[];
 
-function releaseGifts(){
- for(let i=0;i<18;i++){
-  const gift=createGift(
-   [0x9b1d2c,0x173c66,0x1d5037][i%3],
-   [0xe4c16c,0xe8d5a2,0xd6b16b][i%3],
-   .35+Math.random()*.3
-  );
-  gift.position.set(
-   17+Math.random()*8,
-   8+Math.random()*8,
-   (Math.random()-.5)*5
-  );
-  gift.userData={
-   vx:-2-Math.random()*2,
-   vy:-1.5-Math.random()*2,
-   rot:(Math.random()-.5)*3
-  };
-  scene.add(gift);
-  fallingGifts.push(gift);
- }
+const giftPalette=[
+  [0x9b1d2c,0xe4c16c],
+  [0x173c66,0xe8d5a2],
+  [0x1d5037,0xd6b16b],
+  [0x8d2441,0xe7c77d]
+];
+
+function releasePresentWave(){
+  for(let i=0;i<12;i++){
+    const colors=giftPalette[i%giftPalette.length];
+    const gift=createGift(
+      colors[0],colors[1],.42+Math.random()*.24
+    );
+
+    // Target area around the base of the Christmas tree
+    const targetX=(Math.random()-.5)*3.6;
+    const targetZ=(Math.random()-.5)*2.8;
+
+    gift.position.set(
+      targetX+(Math.random()-.5)*1.5,
+      8+Math.random()*4,
+      targetZ-1
+    );
+
+    gift.userData={
+      targetX,
+      targetZ,
+      velocity:0,
+      landed:false,
+      rotationSpeed:(Math.random()-.5)*1.5
+    };
+
+    scene.add(gift);
+    fallingGifts.push(gift);
+  }
 }
 
-const dustCount=600;
-const dustPos=new Float32Array(dustCount*3);
-const dustGeo=new THREE.BufferGeometry();
-dustGeo.setAttribute('position',
- new THREE.BufferAttribute(dustPos,3));
-const dustMat=new THREE.PointsMaterial({
- color:0xffd17b,size:.085,transparent:true,
- opacity:0,blending:THREE.AdditiveBlending
+/* =====================================
+   GOLDEN DUST
+===================================== */
+
+const dustCount=450;
+const dustPositions=new Float32Array(dustCount*3);
+const dustGeometry=new THREE.BufferGeometry();
+dustGeometry.setAttribute(
+  'position',
+  new THREE.BufferAttribute(dustPositions,3)
+);
+
+const dustMaterial=new THREE.PointsMaterial({
+  color:0xffd17b,
+  size:.09,
+  transparent:true,
+  opacity:0,
+  blending:THREE.AdditiveBlending
 });
-const dust=new THREE.Points(dustGeo,dustMat);
-scene.add(dust);
+
+const goldDust=new THREE.Points(dustGeometry,dustMaterial);
+scene.add(goldDust);
 
 let dustActive=false;
-function burstDust(){
- for(let i=0;i<dustCount;i++){
-  dustPos[i*3]=20+Math.random()*5;
-  dustPos[i*3+1]=7+Math.random()*5;
-  dustPos[i*3+2]=(Math.random()-.5)*6;
- }
- dustGeo.attributes.position.needsUpdate=true;
- dustActive=true;
- dustMat.opacity=.9;
+
+function startGoldDust(){
+  for(let i=0;i<dustCount;i++){
+    dustPositions[i*3]=20+Math.random()*4;
+    dustPositions[i*3+1]=7+Math.random()*5;
+    dustPositions[i*3+2]=(Math.random()-.5)*6;
+  }
+  dustGeometry.attributes.position.needsUpdate=true;
+  dustMaterial.opacity=.9;
+  dustActive=true;
 }
 
-/* =========================
-   OPENING TIMELINE
-========================= */
+/* =====================================
+   INTRO: TAP TO BEGIN
+===================================== */
 
-let beginning=null;
-let introDone=false;
+let started=false;
+let introStart=0;
+let introFinished=false;
 let treeReady=false;
-let flightUsed=false;
+
+const intro=document.getElementById('intro');
+
+function beginExperience(){
+  if(started)return;
+  started=true;
+  introStart=performance.now();
+  intro.style.opacity='0';
+  setTimeout(()=>{intro.style.display='none'},2100);
+}
+
+intro.addEventListener('pointerdown',beginExperience);
+intro.addEventListener('touchstart',beginExperience,{passive:true});
+
+/* =====================================
+   OPENING ANIMATION
+   Ground light -> spiral -> tree growth
+===================================== */
+
+const groundSpark=new THREE.Mesh(
+  new THREE.SphereGeometry(.12,12,12),
+  new THREE.MeshBasicMaterial({
+    color:0xffe9b1,
+    transparent:true,
+    opacity:0,
+    blending:THREE.AdditiveBlending
+  })
+);
+scene.add(groundSpark);
+
+const groundSparkLight=new THREE.PointLight(0xffd27c,35,6);
+groundSpark.add(groundSparkLight);
 
 function smooth(t){
- return t*t*(3-2*t);
+  return t*t*(3-2*t);
 }
 
 function updateOpening(time){
- if(beginning===null)beginning=time;
- const elapsed=(time-beginning)/1000;
+  if(!started)return;
 
- // The tree begins hidden
- tree.visible=true;
+  const elapsed=(time-introStart)/1000;
 
- // Light approaches along the ground first
- const approach=Math.min(elapsed/2.3,1);
- const glowPosition=new THREE.Vector3(
-  -5+approach*5,
-  .15,
-  4-approach*3
- );
+  // 1. A small star of light moves along the snowy ground
+  const groundProgress=Math.min(elapsed/2.4,1);
+  groundSpark.visible=true;
+  groundSpark.material.opacity=Math.min(elapsed/1.2,1);
+  groundSpark.position.set(
+    -6+groundProgress*6,
+    .12,
+    3-groundProgress*3
+  );
 
- warmLight.position.copy(glowPosition);
- warmLight.intensity=40+approach*65;
+  // 2. The spiral begins to climb
+  const progress=Math.max(
+    0,Math.min((elapsed-1.7)/11,1)
+  );
+  const p=smooth(progress);
 
- // Then the spiral travels upward
- const progress=Math.max(0,Math.min((elapsed-1.8)/10.5,1));
- const p=smooth(progress);
+  spiralMaterial.opacity=.95*p;
+  spiralGeometry.setDrawRange(
+    0,Math.floor(spiralSegments*p)
+  );
 
- spiralMat.opacity=.95*p;
- spiralGeo.setDrawRange(0,Math.floor(1200*p));
+  // The leading star travels upward along the spiral
+  if(progress>0&&progress<1){
+    movingStar.visible=true;
+    movingStar.material.opacity=1;
+    const point=spiralCurve.getPointAt(
+      Math.min(progress,.999)
+    );
+    movingStar.position.copy(point);
+  }else if(progress>=1){
+    movingStar.visible=false;
+  }
 
- // Branches appear from the bottom upwards
- branchLayers.forEach((layer,index)=>{
-  const threshold=index/layerCount;
-  const local=Math.max(0,Math.min(
-   (progress-threshold)*layerCount*1.6,1
-  ));
-  const s=smooth(local);
-  layer.scale.set(s,s,s);
- });
+  // 3. Tree branches grow as the spiral passes
+  branchLayers.forEach((layer,index)=>{
+    const layerStart=index/layerCount;
+    const local=Math.max(
+      0,Math.min((progress-layerStart)*layerCount*1.35,1)
+    );
+    const scale=smooth(local);
+    layer.scale.set(scale,scale,scale);
+  });
 
- // Lights appear after the spiral reaches them
- lights.forEach((bulb,index)=>{
-  const y=bulb.position.y/treeHeight;
-  const local=Math.max(0,Math.min((progress-y)*5,1));
-  bulb.material.opacity=local;
- });
+  // 4. Lights follow the growing spiral
+  treeLights.forEach(bulb=>{
+    const height=bulb.position.y/treeHeight;
+    const local=Math.max(0,Math.min((progress-height)*5,1));
+    bulb.material.opacity=local;
+  });
 
- ornaments.forEach((o,index)=>{
-  o.visible=progress>(o.position.y/treeHeight)+.05;
- });
+  ornaments.forEach(ball=>{
+    const height=ball.position.y/treeHeight;
+    ball.visible=progress>height+.035;
+  });
 
- // Moving golden particles
- const arr=trailGeo.attributes.position.array;
- for(let i=0;i<trailCount;i++){
-  const t=(i/trailCount)*progress;
-  const point=spiralCurve.getPointAt(Math.min(t,.999));
-  const a=time*.0008+i;
-  arr[i*3]=point.x+Math.sin(a)*.12;
-  arr[i*3+1]=point.y;
-  arr[i*3+2]=point.z+Math.cos(a)*.12;
- }
- trailGeo.attributes.position.needsUpdate=true;
- trailMat.opacity=progress>.02?.9:0;
+  // Golden particles along the spiral
+  const positions=trailGeometry.attributes.position.array;
 
- // Star lights up last
- starGroup.visible=progress>.88;
- if(progress>=1&&!introDone){
-  introDone=true;
-  treeReady=true;
-  const intro=document.getElementById('intro');
-  intro.style.opacity=0;
-  setTimeout(()=>intro.style.display='none',2600);
- }
+  for(let i=0;i<trailCount;i++){
+    const t=(i/trailCount)*Math.max(progress,.001);
+    const point=spiralCurve.getPointAt(Math.min(t,.999));
+    const angle=time*.001+i*.2;
+
+    positions[i*3]=point.x+Math.sin(angle)*.11;
+    positions[i*3+1]=point.y;
+    positions[i*3+2]=point.z+Math.cos(angle)*.11;
+  }
+
+  trailGeometry.attributes.position.needsUpdate=true;
+  trailMaterial.opacity=progress>.01?.85:0;
+
+  // Tree top star appears when the spiral reaches the top
+  starGroup.visible=progress>.91;
+
+  if(progress>=1&&!introFinished){
+    introFinished=true;
+    treeReady=true;
+  }
 }
 
-/* =========================
-   CLICK TREE / STAR
-========================= */
+/* =====================================
+   CLICK TREE: SLEIGH FLIGHT
+===================================== */
+
+let flightActive=false;
+let flightTime=0;
+let presentsReleased=false;
+
+function launchSleigh(){
+  if(flightActive)return;
+
+  flightActive=true;
+  flightTime=0;
+  presentsReleased=false;
+  flight.visible=true;
+  flight.position.set(23,9,2);
+  startGoldDust();
+}
 
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
 
-const messages=[
- {lang:'zh',text:'願你在這個聖誕節，心中有平安，生命有喜樂，所走的每一步都有溫柔的光陪伴。'},
- {lang:'en',text:'May your Christmas be filled with peace, joy, and the warmth of love. May hope shine brightly in every step you take.'},
- {lang:'zh',text:'願你在寒冷的冬日裡，被愛包圍；在未知的前方，仍有信心與勇氣。'},
- {lang:'en',text:'May the light of Christmas bring you comfort, hope, and beautiful new beginnings. Wishing you a season of peace and joy.'},
- {lang:'zh',text:'願主賜你平安與喜樂，在每個平凡的日子裡經歷信實與恩典。'},
- {lang:'en',text:'May the peace of Christ be with you, and may His love bring comfort and joy to your heart this Christmas.'},
- {lang:'zh',text:'願你的心有平安，眼中有盼望，生活中有值得感恩的小小奇蹟。'},
- {lang:'en',text:'May kindness surround you, peace dwell within you, and joy fill your home this Christmas.'},
- {lang:'zh',text:'願耶穌降生的盼望，成為你生命中的光；願你在愛中得著真正的平安。'},
- {lang:'en',text:'May the miracle of Christmas remind you that love, hope, and grace are always near. Have a blessed Christmas!'},
- {lang:'zh',text:'願新的一年充滿和平、信實與喜樂，也願每一份真誠的盼望都不被辜負。'},
- {lang:'en',text:'Wishing you a Christmas filled with gentle moments, faithful love, lasting peace, and countless reasons to smile.'}
+const blessingMessages=[
+  // Chinese
+  {lang:'zh',text:'願這個聖誕節，平安住在你的心中，喜樂充滿你的每一天。願溫柔的光照亮前方的道路。'},
+  {lang:'zh',text:'願你在寒冷的冬日裡被愛包圍，在未知的旅程中仍有盼望與勇氣。'},
+  {lang:'zh',text:'願新的一年充滿和平、信實與喜樂，也願每一份真誠的盼望都找到歸屬。'},
+  {lang:'zh',text:'願你珍惜的人都平安，願生活中的小小美好，成為心中最溫暖的禮物。'},
+  {lang:'zh',text:'願主的恩典與平安伴隨你，在每個平凡的日子裡，都能看見值得感恩的光。'},
+  {lang:'zh',text:'願耶穌降生帶來的盼望，成為你生命中的光；願愛與平安常在你心中。'},
+  {lang:'zh',text:'願你的冬天有溫暖相伴，心中有平安，眼裡有盼望，生活有喜樂。'},
+  {lang:'zh',text:'願你在新的一年裡，遇見美好的事，也成為別人生命中溫暖的祝福。'},
+
+  // English
+  {lang:'en',text:'May your Christmas be filled with peace, joy, and the warmth of love. May hope shine brightly in every step you take.'},
+  {lang:'en',text:'May kindness surround you, peace dwell within you, and joy fill your home this Christmas.'},
+  {lang:'en',text:'Wishing you a season of wonder, a heart full of gratitude, and a new year filled with beautiful beginnings.'},
+  {lang:'en',text:'May the light of Christmas bring comfort to your heart and hope to every new journey.'},
+  {lang:'en',text:'May the peace of Christ be with you, and may His love bring comfort and joy to your heart this Christmas.'},
+  {lang:'en',text:'May your days be merry, your heart be peaceful, and your home be filled with love and laughter.'},
+  {lang:'en',text:'May faith, hope, and love guide you through the coming year. Have a peaceful and blessed Christmas!'},
+  {lang:'en',text:'May the miracle of Christmas remind you that love, hope, and grace are always near.'}
 ];
 
-function showBlessing(){
- const item=messages[Math.floor(Math.random()*messages.length)];
- const prefix=item.lang==='zh'?'聖誕祝福':'CHRISTMAS BLESSING';
- document.getElementById('blessingText').textContent=
-  prefix+'\n\n'+item.text;
- document.getElementById('blessing').style.display='flex';
-}
-window.closeBlessing=()=>{
- document.getElementById('blessing').style.display='none';
-};
+let lastBlessing=-1;
 
-function launchFlight(){
- if(flightActive)return;
- flightActive=true;
- flightUsed=true;
- flightTime=0;
- flight.visible=true;
- flight.position.set(22,9,2);
- releaseGifts();
- burstDust();
+function showBlessing(){
+  let index;
+  do{
+    index=Math.floor(Math.random()*blessingMessages.length);
+  }while(index===lastBlessing);
+  lastBlessing=index;
+
+  const item=blessingMessages[index];
+  document.getElementById('blessingText').textContent=
+    (item.lang==='zh'?'聖誕祝福':'CHRISTMAS BLESSING')+
+    '\n\n'+item.text;
+
+  document.getElementById('blessing').style.display='flex';
 }
+
+document.getElementById('closeBlessing').addEventListener(
+  'click',()=>{
+    document.getElementById('blessing').style.display='none';
+  }
+);
 
 renderer.domElement.addEventListener('pointerdown',event=>{
- if(document.getElementById('blessing').style.display==='flex')return;
+  if(!started||!treeReady)return;
+  if(document.getElementById('blessing').style.display==='flex')return;
 
- pointer.x=event.clientX/innerWidth*2-1;
- pointer.y=-(event.clientY/innerHeight)*2+1;
- raycaster.setFromCamera(pointer,camera);
+  pointer.x=event.clientX/innerWidth*2-1;
+  pointer.y=-(event.clientY/innerHeight)*2+1;
 
- if(starGroup.visible){
-  const starHits=raycaster.intersectObject(starGroup,true);
-  if(starHits.length){
-   showBlessing();
-   return;
+  raycaster.setFromCamera(pointer,camera);
+
+  // Check the star first
+  if(starGroup.visible){
+    const starHits=raycaster.intersectObject(starGroup,true);
+    if(starHits.length){
+      showBlessing();
+      return;
+    }
   }
- }
 
- if(treeReady){
-  const hits=raycaster.intersectObject(tree,true);
-  if(hits.length)launchFlight();
- }
+  // Then check the tree
+  const treeHits=raycaster.intersectObject(tree,true);
+  if(treeHits.length){
+    launchSleigh();
+  }
 });
 
-/* =========================
-   FLIGHT UPDATE
-========================= */
+/* =====================================
+   FLIGHT AND GIFT FALLING
+===================================== */
 
 function updateFlight(delta){
- if(!flightActive)return;
- flightTime+=delta;
+  if(flightActive){
+    flightTime+=delta;
 
- const p=Math.min(flightTime/8,1);
- const eased=smooth(p);
+    const p=Math.min(flightTime/9,1);
+    const eased=smooth(p);
 
- // Right to left
- flight.position.x=22-44*eased;
- flight.position.y=9+Math.sin(flightTime*2)*.28;
- flight.rotation.z=Math.sin(flightTime*1.7)*.025;
+    // Santa and reindeer fly from right to left
+    flight.position.x=23-47*eased;
+    flight.position.y=9+Math.sin(flightTime*2.1)*.25;
+    flight.rotation.z=Math.sin(flightTime*1.5)*.018;
 
- if(flightTime>8){
-  flightActive=false;
-  flight.visible=false;
- }
+    // Release presents as the sleigh passes above the tree
+    if(!presentsReleased&&flight.position.x<3.5){
+      presentsReleased=true;
+      releasePresentWave();
+    }
 
- for(let i=fallingGifts.length-1;i>=0;i--){
-  const gift=fallingGifts[i];
-  const d=gift.userData;
-  gift.position.x+=d.vx*delta;
-  gift.position.y+=d.vy*delta;
-  gift.position.y-=.45*delta;
-  gift.rotation.x+=delta*d.rot;
-  gift.rotation.z+=delta*d.rot*.6;
-
-  if(gift.position.y<-.5||gift.position.x< -25){
-   scene.remove(gift);
-   fallingGifts.splice(i,1);
+    if(p>=1){
+      flightActive=false;
+      flight.visible=false;
+    }
   }
- }
+
+  // Presents fall and settle on the snowy ground
+  for(let i=fallingGifts.length-1;i>=0;i--){
+    const gift=fallingGifts[i];
+    const data=gift.userData;
+
+    if(!data.landed){
+      data.velocity+=9.0*delta;
+      gift.position.y-=data.velocity*delta;
+
+      gift.position.x+=
+        (data.targetX-gift.position.x)*delta*.8;
+      gift.position.z+=
+        (data.targetZ-gift.position.z)*delta*.8;
+
+      gift.rotation.y+=data.rotationSpeed*delta;
+      gift.rotation.z+=data.rotationSpeed*.3*delta;
+
+      if(gift.position.y<=.38){
+        gift.position.y=.38;
+        data.landed=true;
+        gift.rotation.x=0;
+        gift.rotation.z=0;
+        landedGifts.push(gift);
+        fallingGifts.splice(i,1);
+      }
+    }
+  }
 }
 
-/* =========================
-   MAIN LOOP
-========================= */
+/* =====================================
+   MAIN ANIMATION LOOP
+===================================== */
 
 const clock=new THREE.Clock();
 
 function animate(time){
- requestAnimationFrame(animate);
- const delta=Math.min(clock.getDelta(),.05);
+  requestAnimationFrame(animate);
 
- updateOpening(time);
- updateFlight(delta);
+  const delta=Math.min(clock.getDelta(),.05);
 
- // Gentle tree rotation
- if(introDone)tree.rotation.y+=.00055;
+  updateOpening(time);
+  updateFlight(delta);
 
- // Star glimmer
- if(starGroup.visible){
-  starGroup.rotation.y+=delta*.55;
-  topStar.rotation.z=Math.sin(time*.0015)*.08;
-  starLamp.intensity=60+Math.sin(time*.004)*18;
- }
-
- // Snow moves toward viewer
- for(let i=0;i<snowCount;i++){
-  const k=i*3;
-  snowPos[k+1]-=snowSpeed[i]*delta*.7;
-  snowPos[k+2]+=snowSpeed[i]*delta*1.7;
-  snowPos[k]+=Math.sin(time*.0007+i)*delta*.25;
-
-  if(snowPos[k+1]<-3)snowPos[k+1]=32;
-  if(snowPos[k+2]>15){
-   snowPos[k+2]=-28;
-   snowPos[k]=(Math.random()-.5)*42;
-   snowPos[k+1]=Math.random()*32;
+  // Slow rotation after tree has fully appeared
+  if(introFinished){
+    tree.rotation.y+=delta*.045;
   }
- }
- snowGeo.attributes.position.needsUpdate=true;
 
- // Star field shimmer
- starMat.opacity=.68+Math.sin(time*.0008)*.2;
+  // Twinkling lights
+  treeLights.forEach((bulb,i)=>{
+    if(bulb.material.opacity>0){
+      bulb.material.opacity=
+        .68+Math.sin(time*.002+i*1.7)*.28;
+    }
+  });
 
- // Warm light breathing
- warmLight.intensity=85+Math.sin(time*.001)*10;
+  // Star shimmer
+  starMaterial.opacity=.7+Math.sin(time*.0009)*.18;
 
- // Gold dust follows the sleigh and slowly fades
- if(dustActive){
-  const arr=dustGeo.attributes.position.array;
-  for(let i=0;i<dustCount;i++){
-   arr[i*3]-=delta*(1+Math.random()*2);
-   arr[i*3+1]-=delta*(.3+Math.random()*.7);
-   arr[i*3+2]+=(Math.random()-.5)*delta;
+  if(starGroup.visible){
+    starGroup.rotation.y+=delta*.45;
+    topStar.rotation.z=Math.sin(time*.0014)*.055;
+    topStarLight.intensity=58+Math.sin(time*.004)*17;
   }
-  dustGeo.attributes.position.needsUpdate=true;
-  dustMat.opacity=Math.max(0,dustMat.opacity-delta*.12);
-  if(dustMat.opacity<=0)dustActive=false;
- }
 
- renderer.render(scene,camera);
+  // Snow moves downward and toward the camera
+  for(let i=0;i<SNOW_COUNT;i++){
+    const k=i*3;
+
+    snowPositions[k+1]-=snowSpeeds[i]*delta*.7;
+    snowPositions[k+2]+=snowSpeeds[i]*delta*1.75;
+    snowPositions[k]+=Math.sin(time*.0007+i)*delta*.22;
+
+    if(snowPositions[k+1]<-3){
+      snowPositions[k+1]=32;
+    }
+
+    if(snowPositions[k+2]>16){
+      snowPositions[k+2]=-30;
+      snowPositions[k]=(Math.random()-.5)*42;
+      snowPositions[k+1]=Math.random()*32;
+    }
+  }
+  snowGeometry.attributes.position.needsUpdate=true;
+
+  // Golden dust slowly drifts and fades
+  if(dustActive){
+    for(let i=0;i<dustCount;i++){
+      const k=i*3;
+      dustPositions[k]-=delta*(1+Math.random()*1.3);
+      dustPositions[k+1]-=delta*(.25+Math.random()*.5);
+      dustPositions[k+2]+=(Math.random()-.5)*delta*.5;
+    }
+
+    dustGeometry.attributes.position.needsUpdate=true;
+    dustMaterial.opacity=Math.max(
+      0,dustMaterial.opacity-delta*.09
+    );
+
+    if(dustMaterial.opacity<=0){
+      dustActive=false;
+    }
+  }
+
+  // Soft breathing light
+  goldenFill.intensity=70+Math.sin(time*.001)*9;
+
+  renderer.render(scene,camera);
 }
+
 requestAnimationFrame(animate);
 
-/* =========================
+/* =====================================
    RESPONSIVE
-========================= */
+===================================== */
 
 window.addEventListener('resize',()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
- renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 });
 </script>
 </body>
 </html>
-
